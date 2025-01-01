@@ -35,6 +35,40 @@
             padding-bottom: 5px;
             margin-bottom: 10px;
         }
+        .info-icon {
+            font-size: 16px;
+            color: #007BFF;
+            cursor: pointer;
+            margin-left: 10px;
+            position: relative;
+            display: inline-block;
+        }
+        .info-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            width: 500px;
+            max-width: 800px;
+            max-height: 100px;
+            overflow: auto;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .info-icon:hover::after {
+            visibility: visible;
+            opacity: 1;
+        }
         button {
             margin: 10px 0;
             padding: 10px 20px;
@@ -108,19 +142,19 @@
     </header>
     <main>
         <section>
-            <h2>1. Generate Wallet</h2>
+            <h2>1. Generate Wallet <span class="info-icon" data-tooltip="Wallet generation creates a pair of cryptographic keys: a private key for security and a public key for receiving transactions, enabling wallet access.">i</span></h2>
             <button onclick="generateWallet()">Generate Wallet</button>
             <textarea id="wallet-output" readonly placeholder="Your generated wallet details will appear here..."></textarea>
         </section>
 
         <section>
-            <h2>2. View Wallets</h2>
+            <h2>2. View Wallets <span class="info-icon" data-tooltip="A blockchain wallet stores private keys, allowing users to send and receive cryptocurrency, manage transactions, and access their blockchain assets securely.">i</span></h2>
             <button onclick="viewWallets()">View All Wallets</button>
             <ul id="wallets-output" class="wallets-list"></ul>
         </section>
 
         <section>
-            <h2>3. Create Transaction</h2>
+            <h2>3. Create Transaction <span class="info-icon" data-tooltip="A transaction involves signing with a private key, broadcasting to the blockchain network, where it's validated and recorded in a block, updating the ledger.">i</span></h2>
             <label for="sender-key">Sender Public Key:</label>
             <textarea id="sender-key" placeholder="Enter sender's public key..."></textarea>
             <label for="recipient-key">Recipient Public Key:</label>
@@ -132,14 +166,14 @@
         </section>
 
         <section>
-            <h2>4. Add Block</h2>
-            <button onclick="startMining()">Add Block</button>
+            <h2>4. Mine Block <span class="info-icon" data-tooltip="Mining a block involves solving complex mathematical puzzles to validate transactions. Once solved, the block is added to the blockchain, and miners are rewarded.">i</span></h2>
+            <button onclick="startMining()">Mine Block</button>
             <button onclick="speedUpMining()">Speed Up</button>
             <div id="mining-output" class="output"></div>
         </section>
 
         <section>
-            <h2>5. View Blockchain</h2>
+            <h2>5. View Blockchain <span class="info-icon" data-tooltip="Here you can view the entire blockchain with all the blocks and transactions.">i</span></h2>
             <button onclick="viewBlockchain()">View Blockchain</button>
             <ul id="blockchain-output" class="blockchain-list"></ul>
         </section>
