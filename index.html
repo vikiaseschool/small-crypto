@@ -3,143 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blockchain Learning Platform</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        header {
-            background-color: #007BFF;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        main {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        section {
-            margin-bottom: 20px;
-        }
-        section h2 {
-            color: #333;
-            font-size: 1.5em;
-            border-bottom: 2px solid #007BFF;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-        .info-icon {
-            font-size: 16px;
-            color: #007BFF;
-            cursor: pointer;
-            margin-left: 10px;
-            position: relative;
-            display: inline-block;
-        }
-        .info-icon::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: white;
-            padding: 5px;
-            border-radius: 5px;
-            font-size: 14px;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s;
-            white-space: nowrap;
-            width: 500px;
-            max-width: 800px;
-            max-height: 100px;
-            overflow: auto;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-        .info-icon:hover::after {
-            visibility: visible;
-            opacity: 1;
-        }
-        button {
-            margin: 10px 0;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        textarea, input {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        .output {
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            margin-top: 10px;
-            padding: 10px;
-            font-family: monospace;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            width: 100%;
-            overflow-wrap: break-word;
-            resize: vertical;
-            min-height: 100px;
-        }
-        .wallets-list, .blockchain-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .wallets-list li, .blockchain-list li {
-            background-color: #f1f1f1;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .wallet-item, .block-item {
-            margin-bottom: 10px;
-        }
-        .block-item span {
-            font-weight: bold;
-        }
-        .short-key {
-            display: inline-block;
-            width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        textarea#wallet-output {
-            height: 120px;
-        }
-    </style>
+    <title>Learn Blockchain!</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Blockchain Learning Platform</h1>
+        <h1>Learn Blockchain!</h1>
         <p>Understand the core functionality of blockchain through interactive tools.</p>
     </header>
+
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Welcome to interactive blockchain learning!</h2>
+            <p>On this web you can learn the basics of blockchain and how it works.</p>
+            <p><strong>What is blockchain?</strong></p>
+            <p>Blockchain is a digital ledger technology that securely stores data across many computers. It works like a chain of blocks, each containing data, such as transaction details. Every time a new block is created, it’s linked to the previous one, forming a chain. This process makes it nearly impossible to alter past data, providing security and trust. Unlike traditional systems that rely on central authorities (like banks), blockchain operates in a decentralized way, meaning no single entity controls it. It’s used for various applications, like cryptocurrency, ensuring transparency, security, and reliability without needing a middleman.</p>
+        </div>
+    </div>
+
     <main>
         <section>
             <h2>1. Generate Wallet <span class="info-icon" data-tooltip="Wallet generation creates a pair of cryptographic keys: a private key for security and a public key for receiving transactions, enabling wallet access.">i</span></h2>
@@ -178,149 +60,7 @@
             <ul id="blockchain-output" class="blockchain-list"></ul>
         </section>
     </main>
-    <script>
-        const API_URL = "http://127.0.0.1:5000";
-        let miningInterval;
-        let attemptCount = 0;
 
-        async function generateWallet() {
-            const response = await fetch(`${API_URL}/wallet/new`);
-            const data = await response.json();
-            document.getElementById("wallet-output").value = `Private Key: ${data.private_key}\nPublic Key: ${data.public_key}`;
-            adjustKeyLength();
-        }
-
-        async function viewWallets() {
-            const response = await fetch(`${API_URL}/wallets`);
-            const wallets = await response.json();
-            const walletsList = document.getElementById("wallets-output");
-            walletsList.innerHTML = "";
-            wallets.forEach(wallet => {
-                const li = document.createElement("li");
-                li.classList.add("wallet-item");
-                li.innerHTML = `
-                    <p><strong>Public Key:</strong></p>
-                    <p><span class="short-key">${wallet.public_key}</span></p>
-                `;
-                walletsList.appendChild(li);
-                adjustKeyLength();
-            });
-        }
-
-        function adjustKeyLength() {
-            const keys = document.querySelectorAll('.short-key');
-            keys.forEach(key => {
-                const maxLength = 80;
-                const fullKey = key.textContent;
-                if (fullKey.length > maxLength) {
-                    key.textContent = fullKey.substring(0, maxLength) + '...';
-                }
-            });
-        }
-
-        async function createTransaction() {
-            const sender = document.getElementById("sender-key").value.trim();
-            const recipient = document.getElementById("recipient-key").value.trim();
-            const amount = document.getElementById("amount").value;
-
-            if (!sender || !recipient || !amount) {
-                alert("Please fill out all fields.");
-                return;
-            }
-
-            const transaction = {
-                sender: sender,
-                recipient: recipient,
-                amount: parseFloat(amount),
-                signature: "dummy_signature"
-            };
-
-            const response = await fetch(`${API_URL}/transaction/new`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(transaction)
-            });
-
-            const result = await response.json();
-            document.getElementById("transaction-output").innerText = result.message;
-        }
-
-        async function startMining() {
-            document.getElementById("mining-output").innerText = "Starting mining...";
-            attemptCount = 0;
-
-            const response = await fetch(`${API_URL}/transactions`);
-            const transactions = await response.json();
-
-            if (transactions.length === 0) {
-                const newTransaction = {
-                    sender: "15example_sender8887454656435a64658v7sfe5fes68FES5DS2A",
-                    recipient: "8g8rgd84aseg6example78afas68aw45fe5wf57vewsrs5s8de6",
-                    amount: 100,
-                    signature: "dummy_signature"
-                };
-
-                await fetch(`${API_URL}/transaction/new`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(newTransaction)
-                });
-
-                document.getElementById("mining-output").innerText = "No transactions found. Created a dummy transaction.";
-            }
-
-            miningInterval = setInterval(() => {
-                attemptCount++;
-                const hash = generateHash();
-                document.getElementById("mining-output").innerText = `Trying hash: ${hash}, Attempt: ${attemptCount}`;
-            }, 1000);
-        }
-
-        function generateHash() {
-            const chars = "abcdef0123456789";
-            let hash = "";
-            for (let i = 0; i < 64; i++) {
-                hash += chars[Math.floor(Math.random() * chars.length)];
-            }
-            return hash;
-        }
-
-        async function speedUpMining() {
-            clearInterval(miningInterval);
-            const response = await fetch(`${API_URL}/block/new`, { method: "POST" });
-            const result = await response.json();
-            document.getElementById("mining-output").innerText = result.message;
-        }
-
-        async function viewBlockchain() {
-            const response = await fetch(`${API_URL}/blockchain`);
-            const chain = await response.json();
-            const blockchainList = document.getElementById("blockchain-output");
-            blockchainList.innerHTML = "";
-
-            chain.forEach(block => {
-                const li = document.createElement("li");
-                li.classList.add("block-item");
-                li.innerHTML = `
-
-                    <p><strong>Block Index:</strong> ${block.index}</p>
-                    <p><strong>Previous Hash:</strong> ${block.previous_hash}</p>
-                    <p><strong>Hash:</strong> ${block.hash}</p>
-                    <p><strong>Transactions:</strong></p>
-                    <ul>
-                        ${block.transactions.map(tx => `
-                            <li>
-                                <p><span>Sender:</span> <span class="short-key">${tx.sender}</span></p>
-                                <p><span>Recipient:</span> <span class="short-key">${tx.recipient}</span></p>
-                                <p><span>Amount:</span> ${tx.amount}</p>
-                            </li>
-                        `).join("")}
-                    </ul>
-                `;
-                blockchainList.appendChild(li);
-                adjustKeyLength();
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
