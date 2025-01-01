@@ -15,7 +15,7 @@ I used AI for improving my informative texts and better implementation of some p
 
 ## Prerequisites
 
-- Python 3.x
+- Python
 - Flask
 - ecdsa
 
