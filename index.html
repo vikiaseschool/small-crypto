@@ -133,8 +133,9 @@
 
         <section>
             <h2>4. Add Block</h2>
-            <button onclick="addBlock()">Add Block</button>
-            <div id="block-output" class="output"></div>
+            <button onclick="startMining()">Add Block</button>
+            <button onclick="speedUpMining()">Speed Up</button>
+            <div id="mining-output" class="output"></div>
         </section>
 
         <section>
@@ -145,6 +146,8 @@
     </main>
     <script>
         const API_URL = "http://127.0.0.1:5000";
+        let miningInterval;
+        let attemptCount = 0;
 
         async function generateWallet() {
             const response = await fetch(`${API_URL}/wallet/new`);
@@ -156,10 +159,8 @@
         async function viewWallets() {
             const response = await fetch(`${API_URL}/wallets`);
             const wallets = await response.json();
-
             const walletsList = document.getElementById("wallets-output");
             walletsList.innerHTML = "";
-
             wallets.forEach(wallet => {
                 const li = document.createElement("li");
                 li.classList.add("wallet-item");
@@ -210,16 +211,56 @@
             document.getElementById("transaction-output").innerText = result.message;
         }
 
-        async function addBlock() {
+        async function startMining() {
+            document.getElementById("mining-output").innerText = "Starting mining...";
+            attemptCount = 0;
+
+            const response = await fetch(`${API_URL}/transactions`);
+            const transactions = await response.json();
+
+            if (transactions.length === 0) {
+                const newTransaction = {
+                    sender: "15example_sender8887454656435a64658v7sfe5fes68FES5DS2A",
+                    recipient: "8g8rgd84aseg6example78afas68aw45fe5wf57vewsrs5s8de6",
+                    amount: 100,
+                    signature: "dummy_signature"
+                };
+
+                await fetch(`${API_URL}/transaction/new`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newTransaction)
+                });
+
+                document.getElementById("mining-output").innerText = "No transactions found. Created a dummy transaction.";
+            }
+
+            miningInterval = setInterval(() => {
+                attemptCount++;
+                const hash = generateHash();
+                document.getElementById("mining-output").innerText = `Trying hash: ${hash}, Attempt: ${attemptCount}`;
+            }, 1000);
+        }
+
+        function generateHash() {
+            const chars = "abcdef0123456789";
+            let hash = "";
+            for (let i = 0; i < 64; i++) {
+                hash += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return hash;
+        }
+
+        async function speedUpMining() {
+            clearInterval(miningInterval);
             const response = await fetch(`${API_URL}/block/new`, { method: "POST" });
             const result = await response.json();
-            document.getElementById("block-output").innerText = result.message;
+            document.getElementById("mining-output").innerText = result.message;
         }
 
         async function viewBlockchain() {
             const response = await fetch(`${API_URL}/blockchain`);
             const chain = await response.json();
-
             const blockchainList = document.getElementById("blockchain-output");
             blockchainList.innerHTML = "";
 
@@ -227,6 +268,7 @@
                 const li = document.createElement("li");
                 li.classList.add("block-item");
                 li.innerHTML = `
+
                     <p><strong>Block Index:</strong> ${block.index}</p>
                     <p><strong>Previous Hash:</strong> ${block.previous_hash}</p>
                     <p><strong>Hash:</strong> ${block.hash}</p>
