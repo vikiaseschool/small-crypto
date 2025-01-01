@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Learning Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        section h2 {
+            color: #333;
+            font-size: 1.5em;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        textarea, input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .output {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            padding: 10px;
+            font-family: monospace;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            width: 100%;
+            overflow-wrap: break-word;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .wallets-list, .blockchain-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .wallets-list li, .blockchain-list li {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .wallet-item, .block-item {
+            margin-bottom: 10px;
+        }
+        .block-item span {
+            font-weight: bold;
+        }
+        .short-key {
+            display: inline-block;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        textarea#wallet-output {
+            height: 120px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Blockchain Learning Platform</h1>
+        <p>Understand the core functionality of blockchain through interactive tools.</p>
+    </header>
+    <main>
+        <section>
+            <h2>1. Generate Wallet</h2>
+            <button onclick="generateWallet()">Generate Wallet</button>
+            <textarea id="wallet-output" readonly placeholder="Your generated wallet details will appear here..."></textarea>
+        </section>
+
+        <section>
+            <h2>2. View Wallets</h2>
+            <button onclick="viewWallets()">View All Wallets</button>
+            <ul id="wallets-output" class="wallets-list"></ul>
+        </section>
+
+        <section>
+            <h2>3. Create Transaction</h2>
+            <label for="sender-key">Sender Public Key:</label>
+            <textarea id="sender-key" placeholder="Enter sender's public key..."></textarea>
+            <label for="recipient-key">Recipient Public Key:</label>
+            <textarea id="recipient-key" placeholder="Enter recipient's public key..."></textarea>
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" placeholder="Enter amount..." />
+            <button onclick="createTransaction()">Create Transaction</button>
+            <div id="transaction-output" class="output"></div>
+        </section>
+
+        <section>
+            <h2>4. Add Block</h2>
+            <button onclick="addBlock()">Add Block</button>
+            <div id="block-output" class="output"></div>
+        </section>
+
+        <section>
+            <h2>5. View Blockchain</h2>
+            <button onclick="viewBlockchain()">View Blockchain</button>
+            <ul id="blockchain-output" class="blockchain-list"></ul>
+        </section>
+    </main>
+    <script>
+        const API_URL = "http://127.0.0.1:5000";
+
+        async function generateWallet() {
+            const response = await fetch(`${API_URL}/wallet/new`);
+            const data = await response.json();
+            document.getElementById("wallet-output").value = `Private Key: ${data.private_key}\nPublic Key: ${data.public_key}`;
+            adjustKeyLength();
+        }
+
+        async function viewWallets() {
+            const response = await fetch(`${API_URL}/wallets`);
+            const wallets = await response.json();
+
+            const walletsList = document.getElementById("wallets-output");
+            walletsList.innerHTML = "";
+
+            wallets.forEach(wallet => {
+                const li = document.createElement("li");
+                li.classList.add("wallet-item");
+                li.innerHTML = `
+                    <p><strong>Public Key:</strong></p>
+                    <p><span class="short-key">${wallet.public_key}</span></p>
+                `;
+                walletsList.appendChild(li);
+                adjustKeyLength();
+            });
+        }
+
+        function adjustKeyLength() {
+            const keys = document.querySelectorAll('.short-key');
+            keys.forEach(key => {
+                const maxLength = 80;
+                const fullKey = key.textContent;
+                if (fullKey.length > maxLength) {
+                    key.textContent = fullKey.substring(0, maxLength) + '...';
+                }
+            });
+        }
+
+        async function createTransaction() {
+            const sender = document.getElementById("sender-key").value.trim();
+            const recipient = document.getElementById("recipient-key").value.trim();
+            const amount = document.getElementById("amount").value;
+
+            if (!sender || !recipient || !amount) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            const transaction = {
+                sender: sender,
+                recipient: recipient,
+                amount: parseFloat(amount),
+                signature: "dummy_signature"
+            };
+
+            const response = await fetch(`${API_URL}/transaction/new`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(transaction)
+            });
+
+            const result = await response.json();
+            document.getElementById("transaction-output").innerText = result.message;
+        }
+
+        async function addBlock() {
+            const response = await fetch(`${API_URL}/block/new`, { method: "POST" });
+            const result = await response.json();
+            document.getElementById("block-output").innerText = result.message;
+        }
+
+        async function viewBlockchain() {
+            const response = await fetch(`${API_URL}/blockchain`);
+            const chain = await response.json();
+
+            const blockchainList = document.getElementById("blockchain-output");
+            blockchainList.innerHTML = "";
+
+            chain.forEach(block => {
+                const li = document.createElement("li");
+                li.classList.add("block-item");
+                li.innerHTML = `
+                    <p><strong>Block Index:</strong> ${block.index}</p>
+                    <p><strong>Previous Hash:</strong> ${block.previous_hash}</p>
+                    <p><strong>Hash:</strong> ${block.hash}</p>
+                    <p><strong>Transactions:</strong></p>
+                    <ul>
+                        ${block.transactions.map(tx => `
+                            <li>
+                                <p><span>Sender:</span> <span class="short-key">${tx.sender}</span></p>
+                                <p><span>Recipient:</span> <span class="short-key">${tx.recipient}</span></p>
+                                <p><span>Amount:</span> ${tx.amount}</p>
+                            </li>
+                        `).join("")}
+                    </ul>
+                `;
+                blockchainList.appendChild(li);
+                adjustKeyLength();
+            });
+        }
+    </script>
+</body>
+</html>
